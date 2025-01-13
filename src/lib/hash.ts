@@ -1,27 +1,30 @@
-import { createHmac, hash } from "node:crypto";
+import { createHmac } from "node:crypto";
 
-const secret = "abcdefg";
-const index = 0;
-const data = "I love cupcakes";
-export const HashFunc = () => {
-  const hash = new Block(data, 4, secret).calculatingHash();
-};
-
-class Block {
+export class Block {
   data: any;
   diffeculty: number;
   secret: any;
+  index: number;
+  timeStamp: number;
 
-  constructor(data: any, diffeculty: number, secret: any) {
+  constructor(data: any, diffeculty: number, secret: any, index: number) {
     this.data = data;
     this.diffeculty = diffeculty;
     this.secret = secret;
+    this.index = index;
+    if (index === 0) {
+      this.timeStamp = 1508262800 * 1000;
+    } else {
+      this.timeStamp = Date.now();
+    }
+  }
+  RowHash() {
+    return this.Hashgenerator(0);
   }
 
   Hashgenerator(nonce: number): string {
-    const timeStamp = Date.now();
     const hash = createHmac("sha256", this.secret)
-      .update(this.data + index + timeStamp + nonce)
+      .update(this.data + this.index + this.timeStamp + nonce)
       .digest("hex");
     return hash;
   }
@@ -33,7 +36,8 @@ class Block {
       nonce++;
       hash = this.Hashgenerator(nonce);
     }
-    return { timeStamp: Date.now(), hash, nonce };
+    const thetime = this.timeStamp;
+    return { thetime, hash, nonce };
   }
 
   isValidHash(hash: string): boolean {
