@@ -6,12 +6,13 @@ export class Block {
   secret: any;
   index: number;
   timeStamp: number;
-
+  arr: object[];
   constructor(data: any, diffeculty: number, secret: any, index: number) {
     this.data = data;
     this.diffeculty = diffeculty;
     this.secret = secret;
     this.index = index;
+    this.arr = [];
     if (index === 0) {
       this.timeStamp = 1508262800 * 1000;
     } else {
@@ -37,7 +38,10 @@ export class Block {
       hash = this.Hashgenerator(nonce);
     }
     const thetime = this.timeStamp;
-    return { thetime, hash, nonce };
+    const index = this.index;
+    this.arr.push({ index, thetime, hash, nonce });
+
+    return this.arr[this.arr.length - 1];
   }
 
   isValidHash(hash: string): boolean {
@@ -47,10 +51,5 @@ export class Block {
       }
     }
     return true;
-  }
-
-  HistoryOfPreviousHash() {
-    let arr: [object] = [{}];
-    return arr.push(this.calculatingHash());
   }
 }
