@@ -33,7 +33,6 @@ export async function GET(request: Request) {
     }
   }
   if (type === "0") {
-    console.log("Mining...", data, index, type);
     try {
       const hash = new Block(
         data,

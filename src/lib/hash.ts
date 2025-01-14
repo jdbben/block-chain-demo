@@ -1,4 +1,5 @@
 import { createHmac } from "node:crypto";
+import { arrayBuffer } from "node:stream/consumers";
 
 export class Block {
   data: any;
@@ -19,6 +20,13 @@ export class Block {
       this.timeStamp = Date.now();
     }
   }
+  private historyArray: {
+    index: number;
+    thetime: string;
+    hash: string;
+    nonce: number;
+  }[] = [];
+
   RowHash() {
     return this.Hashgenerator(0);
   }
@@ -39,8 +47,14 @@ export class Block {
     }
     const thetime = this.timeStamp;
     const index = this.index;
-    this.arr.push({ index, thetime, hash, nonce });
-
+    this.historyArray.push({ index, thetime: thetime.toString(), hash, nonce });
+    this.arr.push({
+      index,
+      thetime,
+      hash,
+      nonce,
+      prevHash: this.getPrevHash(),
+    });
     return this.arr[this.arr.length - 1];
   }
 
@@ -51,5 +65,11 @@ export class Block {
       }
     }
     return true;
+  }
+  getPrevHash(): string | null {
+    if (this.historyArray.length > 0) {
+      return this.historyArray[this.historyArray.length - 1].hash;
+    }
+    return null;
   }
 }
