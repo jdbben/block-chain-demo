@@ -17,7 +17,7 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
   const [hash, setHash] = useState("");
   const [nonce, setNonce] = useState(0);
   const [time, setTime] = useState("");
-  const [prevHash, setPrevhash] = useState("");
+  const [prevHash, setPrevhash] = useState<string[]>([""]);
 
   useEffect(() => {
     if (PassedData !== undefined) {
@@ -50,7 +50,7 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
       setHash(res.hash);
       setNonce(res.nonce);
       setTime(res.thetime);
-      setPrevhash(res.prevHash);
+      setPrevhash([...prevHash, res.hash]);
     });
   };
 
@@ -78,7 +78,7 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
           <p style={{ fontSize: 13 }} className="text-sm text-gray-500">
             {BLOCK.prevhash}
           </p>
-          <p style={{ fontSize: 11 }}>{prevHash}</p>
+          <p style={{ fontSize: 11 }}>{prevHash[prevHash.length - 2]}</p>
         </div>
         <div className="flex flex-row items-center gap-4">
           <p className="text-gray-500">{BLOCK.Hash}</p>

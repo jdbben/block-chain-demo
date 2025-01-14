@@ -40,7 +40,6 @@ export async function GET(request: Request) {
         process.env.PUBLIC_KEY as string,
         Number(index)
       ).calculatingHash();
-
       return NextResponse.json({
         hash,
         message: "Hash generated successfully",
