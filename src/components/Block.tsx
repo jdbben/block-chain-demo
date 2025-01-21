@@ -1,9 +1,10 @@
 "use client";
 import { BLOCK } from "@/lib/const";
-import { LuPickaxe } from "react-icons/lu";
-import { GrDocumentText } from "react-icons/gr";
-import { useEffect, useState } from "react";
 import { fetchTheHash } from "@/lib/hashfetch";
+import { histroyStore } from "@/store/historyData";
+import { useEffect, useState } from "react";
+import { GrDocumentText } from "react-icons/gr";
+import { LuPickaxe } from "react-icons/lu";
 
 interface BlockProps {
   index: number;
@@ -17,7 +18,11 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
   const [hash, setHash] = useState("");
   const [nonce, setNonce] = useState(0);
   const [time, setTime] = useState("");
-  const [prevHash, setPrevhash] = useState<string[]>([""]);
+
+  const [typeOfBlock, setTypeOfBlock] = useState(type);
+  const [disabled, setDisabled] = useState(false);
+  const histor: string[] = histroyStore((state: any) => state.history);
+  const updateHistoryHash = histroyStore((state: any) => state.AddHistory);
 
   useEffect(() => {
     if (PassedData !== undefined) {
@@ -32,25 +37,24 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
   }, [index]);
 
   useEffect(() => {
-    if (type === 1) {
-      fetchTheHash(data, type, index).then((res) => {
-        if (typeof res === "string") {
-          setHash(res);
-        }
-      });
-    }
-
-    if (type === 0) {
-      func();
-    }
+    setDisabled(false);
+    setTypeOfBlock(1);
+    fetchTheHash(data, typeOfBlock, index).then((res) => {
+      if (typeof res === "string") {
+        setHash(res);
+      }
+    });
   }, [data]);
 
   const func = () => {
+    setDisabled(true);
+
     fetchTheHash(data, 0, index).then((res) => {
       setHash(res.hash);
       setNonce(res.nonce);
       setTime(res.thetime);
-      setPrevhash([...prevHash, res.hash]);
+      // handleHistoryDataFromChild(res.hash);
+      updateHistoryHash(res.hash);
     });
   };
 
@@ -78,7 +82,11 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
           <p style={{ fontSize: 13 }} className="text-sm text-gray-500">
             {BLOCK.prevhash}
           </p>
-          <p style={{ fontSize: 11 }}>{prevHash[prevHash.length - 2]}</p>
+          {histor.length >= 1 ? (
+            <p style={{ fontSize: 11 }}>{histor[index]}</p>
+          ) : (
+            <p>0</p>
+          )}
         </div>
         <div className="flex flex-row items-center gap-4">
           <p className="text-gray-500">{BLOCK.Hash}</p>
@@ -102,6 +110,7 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
           <div className="text-gray-500">
             <div className="flex flex-row items-center gap-2 cursor-pointer">
               <button
+                disabled={disabled}
                 onClick={() => func()}
                 className="flex items-center border-2 border-gray-200 rounded-lg p-2 hover:bg-gray-200 duration-200 hover:shadow-lg hover:text-gray-500"
               >
