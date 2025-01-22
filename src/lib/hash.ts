@@ -8,19 +8,26 @@ export class Block {
   index: number;
   timeStamp: number;
   arr: object[];
-  constructor(data: any, diffeculty: number, secret: any, index: number) {
+  prevHash?: string;
+  constructor(
+    data: any,
+    diffeculty: number,
+    secret: any,
+    index: number,
+    prevHash: string
+  ) {
     this.data = data;
     this.diffeculty = diffeculty;
     this.secret = secret;
     this.index = index;
     this.arr = [];
+    this.prevHash = prevHash;
     if (index === 0) {
       this.timeStamp = 1508262800 * 1000;
     } else {
       this.timeStamp = Date.now();
     }
   }
-  private historyArray: string[] = [];
 
   RowHash() {
     return this.Hashgenerator(0);
@@ -28,7 +35,7 @@ export class Block {
 
   Hashgenerator(nonce: number): string {
     const hash = createHmac("sha256", this.secret)
-      .update(this.data + this.index + this.timeStamp + nonce)
+      .update(this.data + this.index + this.timeStamp + this.prevHash + nonce)
       .digest("hex");
     return hash;
   }

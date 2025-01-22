@@ -1,7 +1,7 @@
 "use client";
 import { BLOCK } from "@/lib/const";
 import { fetchTheHash } from "@/lib/hashfetch";
-import { histroyStore } from "@/store/historyData";
+import { historyStore as histroyStore } from "@/store/historyData";
 import { useEffect, useState } from "react";
 import { GrDocumentText } from "react-icons/gr";
 import { LuPickaxe } from "react-icons/lu";
@@ -18,12 +18,15 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
   const [hash, setHash] = useState("");
   const [nonce, setNonce] = useState(0);
   const [time, setTime] = useState("");
-
   const [typeOfBlock, setTypeOfBlock] = useState(type);
   const [disabled, setDisabled] = useState(false);
+  const [match, setMatch] = useState(false);
   const histor: string[] = histroyStore((state: any) => state.history);
   const updateHistoryHash = histroyStore((state: any) => state.AddHistory);
-
+  const [prevHash, setPrevHash] = useState(histor[index]);
+  useEffect(() => {
+    console.log(histor);
+  }, [histor]);
   useEffect(() => {
     if (PassedData !== undefined) {
       setData(PassedData);
@@ -39,9 +42,10 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
   useEffect(() => {
     setDisabled(false);
     setTypeOfBlock(1);
-    fetchTheHash(data, typeOfBlock, index).then((res) => {
+    fetchTheHash(data, typeOfBlock, index, prevHash).then((res) => {
       if (typeof res === "string") {
         setHash(res);
+        updateHistoryHash(res, index);
       }
     });
   }, [data]);
@@ -49,14 +53,20 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
   const func = () => {
     setDisabled(true);
 
-    fetchTheHash(data, 0, index).then((res) => {
+    fetchTheHash(data, 0, index, prevHash).then((res) => {
       setHash(res.hash);
       setNonce(res.nonce);
       setTime(res.thetime);
-      // handleHistoryDataFromChild(res.hash);
-      updateHistoryHash(res.hash);
+      updateHistoryHash(res.hash, index);
     });
   };
+  useEffect(() => {
+    if (hash[index] === hash[index - 1]) {
+      setMatch(true);
+    } else {
+      setMatch(false);
+    }
+  }, [hash[index]]);
 
   return (
     <div className="h-[280px] w-[600px] mn-w-[400px] p-11 border-gray-400 border-1 rounded-lg shadow-[4px_0px_10px_4px_rgba(0,0,0,0.1)] hover:shadow-[4px_0px_20px_8px_rgba(0,0,0,0.2)] transition-shadow duration-150">
@@ -83,14 +93,24 @@ const Block = ({ index, PassedData, type }: BlockProps) => {
             {BLOCK.prevhash}
           </p>
           {histor.length >= 1 ? (
-            <p style={{ fontSize: 11 }}>{histor[index]}</p>
+            <p style={{ fontSize: 11 }}>{histor[index - 1]}</p>
           ) : (
             <p>0</p>
           )}
         </div>
         <div className="flex flex-row items-center gap-4">
           <p className="text-gray-500">{BLOCK.Hash}</p>
-          {data === "" ? <p>0</p> : <p style={{ fontSize: 13 }}>{hash}</p>}
+          {data === "" ? (
+            <p>0</p>
+          ) : match ? (
+            <p className="bg-green-400" style={{ fontSize: 13 }}>
+              {hash}
+            </p>
+          ) : (
+            <p className="bg-red-400" style={{ fontSize: 13 }}>
+              {hash}
+            </p>
+          )}
         </div>
         <div className="flex flex-row items-center justify-between">
           <div className="flex flex-row items-baseline gap-4">
